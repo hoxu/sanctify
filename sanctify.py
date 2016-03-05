@@ -3,6 +3,20 @@
 
 import argparse
 
+def read_wrappers_from_stream(f):
+    inside = False
+    result = []
+    for line in f:
+        stripped = line.lstrip('# ').rstrip('\n')
+        if not inside and stripped == '<sanctify>':
+            inside = True
+            continue
+        elif inside and stripped == '</sanctify>':
+            break
+        if inside:
+            result.append(stripped.split())
+    return result
+
 def run(args):
     print(args)
 
