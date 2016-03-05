@@ -17,10 +17,10 @@ def read_wrappers_from_stream(f):
             result.append(stripped.split())
     return result
 
-def unwrap_job(jobpath, wrappers):
+def unwrap_job(sanctify_binary, jobpath, wrappers):
     result = []
     for wrapper in wrappers:
-        result.extend(['sanctify', 'wrapper'])
+        result.extend([sanctify_binary, 'wrapper'])
         result.extend(wrapper)
         result.append('--')
 
