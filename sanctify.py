@@ -66,7 +66,7 @@ def wrapper_workspace(args):
         workspace_components.extend(['project', os.environ['PROJECT_NAME']])
 
     workspace = os.path.expanduser(os.path.join(*workspace_components))
-    os.makedirs(workspace)
+    os.makedirs(workspace, exist_ok=True)
     os.environ['WORKSPACE'] = workspace
 
     # run next step
