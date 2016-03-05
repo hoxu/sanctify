@@ -40,7 +40,12 @@ def run(job, arguments):
     unwrapped = unwrap_job(sanctify_binary, jobpath, wrappers)
     params = list(unwrapped)
     params.extend(arguments)
-    subprocess.check_call(params)
+
+    project = os.path.dirname(jobpath)
+    project_name = os.path.basename(project)
+    job_name = os.path.basename(jobpath)
+
+    subprocess.check_call(params, env=dict(os.environ, PROJECT=project, PROJECT_NAME=project_name, JOB=jobpath, JOB_NAME=job_name))
 
 def command_run(args):
     run(args.job, args.arguments)

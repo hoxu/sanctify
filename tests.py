@@ -1,4 +1,5 @@
 import io
+import os
 from unittest.mock import patch
 
 from nose.tools import eq_
@@ -30,9 +31,10 @@ def test_read_wrappers_from_stream():
 
 @patch('subprocess.check_call')
 def test_run(check_call):
-    sanctify.run('/dev/null', ['foo', 'bar'])
+    with patch.dict(os.environ, {}, True):
+        sanctify.run('/dev/null', ['foo', 'bar'])
 
-    check_call.assert_called_with(['/dev/null', 'foo', 'bar'])
+    check_call.assert_called_with(['/dev/null', 'foo', 'bar'], env={'PROJECT': '/dev', 'PROJECT_NAME': 'dev', 'JOB': '/dev/null', 'JOB_NAME': 'null'})
 
     sanctify.run('testdata/wrapper', [])
     eq_(['wrapper', 'workspace', '--project', '--'], check_call.call_args[0][0][1:5])
@@ -45,7 +47,6 @@ def test_unwrap_job():
 @patch('os.makedirs')
 @patch('subprocess.check_call')
 def test_wrapper_workspace(check_call, makedirs):
-    import os
     with patch.dict(os.environ, {'PROJECT_NAME': 'unittestproject', 'JOB_NAME': 'unittestjob'}):
         sanctify.wrapper_workspace(['--project', '--', 'job.sh'])
 
