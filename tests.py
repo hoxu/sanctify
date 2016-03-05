@@ -1,4 +1,5 @@
 import io
+from unittest.mock import patch
 
 from nose.tools import eq_
 
@@ -26,6 +27,12 @@ def test_read_wrappers_from_stream():
     ]
     wrappers = sanctify.read_wrappers_from_stream(f)
     eq_(expected, wrappers)
+
+@patch('subprocess.check_call')
+def test_run(check_call):
+    sanctify.run('/dev/null', ['foo', 'bar'])
+
+    check_call.assert_called_with(['/dev/null', 'foo', 'bar'])
 
 def test_unwrap_job():
     expected = 'sanctify wrapper trigger --success=next.sh -- sanctify wrapper workspace --project -- job.sh'.split()

@@ -2,6 +2,7 @@
 # Copyright (c) 2016 Heikki Hokkanen <hoxu at users.sf.net>
 
 import argparse
+import subprocess
 
 def read_wrappers_from_stream(f):
     inside = False
@@ -27,8 +28,22 @@ def unwrap_job(sanctify_binary, jobpath, wrappers):
     result.append(jobpath)
     return result
 
-def run(args):
-    print(args)
+def run(job, arguments):
+    import inspect
+    import os
+    sanctify_binary = os.path.abspath(inspect.getfile(inspect.currentframe()))
+
+    with open(job) as f:
+        wrappers = read_wrappers_from_stream(f)
+
+    jobpath = os.path.abspath(job)
+    unwrapped = unwrap_job(sanctify_binary, jobpath, wrappers)
+    params = list(unwrapped)
+    params.extend(arguments)
+    subprocess.check_call(params)
+
+def command_run(args):
+    run(args.job, args.arguments)
 
 def wrapper(args):
     print(args)
@@ -41,7 +56,7 @@ subparsers = parser.add_subparsers(help='sub-command help')
 parser_run = subparsers.add_parser('run', help='Run a job')
 parser_run.add_argument('job', help='Path to job script')
 parser_run.add_argument('arguments', nargs=argparse.REMAINDER, help='job arguments')
-parser_run.set_defaults(func=run)
+parser_run.set_defaults(func=command_run)
 
 # wrapper parser
 parser_wrapper = subparsers.add_parser('wrapper', help='Run a wrapper')
