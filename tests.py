@@ -26,3 +26,8 @@ def test_read_wrappers_from_stream():
     ]
     wrappers = sanctify.read_wrappers_from_stream(f)
     eq_(expected, wrappers)
+
+def test_unwrap_job():
+    expected = 'sanctify wrapper trigger --success=next.sh -- sanctify wrapper workspace --project -- job.sh'.split()
+    unwrapped = sanctify.unwrap_job('job.sh', [['trigger', '--success=next.sh'], ['workspace', '--project']])
+    eq_(expected, unwrapped)
