@@ -74,7 +74,7 @@ def wrapper_workspace(args):
     rest = parsed.arguments[1:]
     assert separator == '--'
 
-    subprocess.check_call(rest)
+    subprocess.check_call(rest, cwd=workspace)
 
 def command_wrapper(parsed):
     if parsed.name == 'workspace':

@@ -50,11 +50,13 @@ def test_wrapper_workspace(check_call, makedirs):
     with patch.dict(os.environ, {'PROJECT_NAME': 'unittestproject', 'JOB_NAME': 'unittestjob'}):
         sanctify.wrapper_workspace(['--project', '--', 'job.sh'])
 
-    eq_(os.path.expanduser('~/.sanctify/workspace/project/unittestproject'), makedirs.call_args[0][0])
-    check_call.assert_called_with(['job.sh'])
+    workspace = os.path.expanduser('~/.sanctify/workspace/project/unittestproject')
+    eq_(workspace, makedirs.call_args[0][0])
+    eq_(['job.sh'], check_call.call_args[0][0])
+    eq_(workspace, check_call.call_args[1]['cwd'])
 
     with patch.dict(os.environ, {'PROJECT_NAME': 'unittestproject', 'JOB_NAME': 'unittestjob'}):
         sanctify.wrapper_workspace(['--job', '--', 'job.sh'])
 
     eq_(os.path.expanduser('~/.sanctify/workspace/job/unittestproject/unittestjob'), makedirs.call_args[0][0])
-    check_call.assert_called_with(['job.sh'])
+    eq_(['job.sh'], check_call.call_args[0][0])
