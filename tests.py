@@ -58,10 +58,16 @@ def test_wrapper_mail():
         eq_('foo', send_mail.call_args[0][3])
         eq_('<user@localhost>', send_mail.call_args[0][1])
 
-    # TODO cases:
-    # --always - failure
-    # --failure - success, failure
-    # --success - success, failure
+        def verify(wrapper_option, returncode, is_sent):
+            with patch('sanctify.sniff_process_output', return_value=['foo', returncode]), patch('sanctify.send_mail') as send_mail:
+                sanctify.wrapper_mail([wrapper_option, '--', 'job.sh'])
+            eq_(is_sent, send_mail.called)
+
+        verify('--always', 1, True)
+        verify('--failure', 0, False)
+        verify('--failure', 1, True)
+        verify('--success', 0, True)
+        verify('--success', 1, False)
 
 @patch('os.makedirs')
 @patch('subprocess.check_call')
