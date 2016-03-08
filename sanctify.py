@@ -50,6 +50,29 @@ def run(job, arguments):
 def command_run(args):
     run(args.job, args.arguments)
 
+def sniff_process_output(args):
+    """Makes an interleaved copy of a process's stdout/stderr, letting them flow to inherited stdout/stderr"""
+    pipe_r, pipe_w = os.pipe()
+
+    # run the actual job, inherit stdin, pipe stdout/stderr
+    pjob = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # use tees to copy stdout/stderr to a pipe
+    # pass as-is to original inherited stdout/stderr
+    subprocess.Popen(['tee', '-a', '/dev/fd/%d' % pipe_w], stdin=pjob.stdout, stdout=None, pass_fds=[pipe_w])
+    subprocess.Popen(['tee', '-a', '/dev/fd/%d' % pipe_w], stdin=pjob.stderr, stdout=None, pass_fds=[pipe_w])
+
+    # Let pjob get SIGPIPE if tees die early
+    pjob.stdout.close()
+    pjob.stderr.close()
+
+    # must be closed for the pipe to close after tees close it
+    # otherwise the read below will block forever
+    os.close(pipe_w)
+
+    with os.fdopen(pipe_r, mode='rb') as f:
+        return f.read()
+
 def wrapper_workspace(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--project', action='store_const', const='project', dest='workspace')

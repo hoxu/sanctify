@@ -39,6 +39,10 @@ def test_run(check_call):
     sanctify.run('testdata/wrapper', [])
     eq_(['wrapper', 'workspace', '--project', '--'], check_call.call_args[0][0][1:5])
 
+def test_sniff_process_output():
+    output = sanctify.sniff_process_output(['testdata/interleaved_output'])
+    eq_('1\n2\n3\n4\n', output.decode('ascii'))
+
 def test_unwrap_job():
     expected = 'sanctify wrapper trigger --success=next.sh -- sanctify wrapper workspace --project -- job.sh'.split()
     unwrapped = sanctify.unwrap_job('sanctify', 'job.sh', [['trigger', '--success=next.sh'], ['workspace', '--project']])
