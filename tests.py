@@ -40,7 +40,7 @@ def test_run(check_call):
     eq_(['wrapper', 'workspace', '--project', '--'], check_call.call_args[0][0][1:5])
 
 def test_sniff_process_output():
-    output = sanctify.sniff_process_output(['testdata/interleaved_output'])
+    output, returncode = sanctify.sniff_process_output(['testdata/interleaved_output'])
     eq_('1\n2\n3\n4\n', output.decode('ascii'))
 
 def test_unwrap_job():

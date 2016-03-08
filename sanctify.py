@@ -71,7 +71,9 @@ def sniff_process_output(args):
     os.close(pipe_w)
 
     with os.fdopen(pipe_r, mode='rb') as f:
-        return f.read()
+        output = f.read()
+
+    return [output, pjob.wait()]
 
 def wrapper_workspace(args):
     parser = argparse.ArgumentParser()
