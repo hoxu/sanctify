@@ -76,8 +76,17 @@ def sniff_process_output(args):
     return [output, pjob.wait()]
 
 def send_mail(mail_from, mail_to, subject, body):
-    # TODO actual implementation
-    print('send_mail(%s, %s, %s)' % (mail_from, mail_to, subject))
+    import smtplib
+    from email.mime.text import MIMEText
+
+    msg = MIMEText(body)
+    msg['From'] = mail_from
+    msg['To'] = mail_to
+    msg['Subject'] = subject
+
+    s = smtplib.SMTP('localhost')
+    s.send_message(msg)
+    s.quit()
 
 def wrapper_mail(args):
     parser = argparse.ArgumentParser()
@@ -100,7 +109,7 @@ def wrapper_mail(args):
 
     # send mail with content if returncode warrants it
     if (returncode == 0 and parsed.when in ['always', 'success']) or (returncode != 0 and parsed.when in ['always', 'failure']):
-        send_mail(mail_from, mail_to, subject, output)
+        send_mail(mail_from, mail_to, subject, output.decode('utf-8'))
 
 def wrapper_workspace(args):
     parser = argparse.ArgumentParser()
