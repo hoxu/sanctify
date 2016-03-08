@@ -101,11 +101,11 @@ def wrapper_mail(args):
     rest = parsed.arguments[1:]
     assert separator == '--'
 
+    output, returncode = sniff_process_output(rest)
+
     mail_from = 'Sanctify <%s@localhost>' % (os.environ['USER'])
     mail_to = '<%s@localhost>' % (os.environ['USER'])
-    subject = 'Sanctify: %s - %s' % (os.environ['PROJECT_NAME'], os.environ['JOB_NAME'])
-
-    output, returncode = sniff_process_output(rest)
+    subject = 'Sanctify: %s - %s [returncode %d]' % (os.environ['PROJECT_NAME'], os.environ['JOB_NAME'], returncode)
 
     # send mail with content if returncode warrants it
     if (returncode == 0 and parsed.when in ['always', 'success']) or (returncode != 0 and parsed.when in ['always', 'failure']):
