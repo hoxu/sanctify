@@ -75,6 +75,33 @@ def sniff_process_output(args):
 
     return [output, pjob.wait()]
 
+def send_mail(mail_from, mail_to, subject, body):
+    # TODO actual implementation
+    print('send_mail(%s, %s, %s)' % (mail_from, mail_to, subject))
+
+def wrapper_mail(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--always', action='store_const', const='always', dest='when')
+    parser.add_argument('--failure', action='store_const', const='failure', dest='when')
+    parser.add_argument('--success', action='store_const', const='success', dest='when')
+    parser.add_argument('arguments', nargs=argparse.REMAINDER)
+    parsed = parser.parse_args(args)
+
+    # run next step
+    separator = parsed.arguments[0]
+    rest = parsed.arguments[1:]
+    assert separator == '--'
+
+    mail_from = 'Sanctify <%s@localhost>' % (os.environ['USER'])
+    mail_to = '<%s@localhost>' % (os.environ['USER'])
+    subject = 'Sanctify: %s - %s' % (os.environ['PROJECT_NAME'], os.environ['JOB_NAME'])
+
+    output, returncode = sniff_process_output(rest)
+
+    # send mail with content if returncode warrants it
+    if (returncode == 0 and parsed.when in ['always', 'success']) or (returncode != 0 and parsed.when in ['always', 'failure']):
+        send_mail(mail_from, mail_to, subject, output)
+
 def wrapper_workspace(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--project', action='store_const', const='project', dest='workspace')
@@ -102,7 +129,9 @@ def wrapper_workspace(args):
     subprocess.check_call(rest, cwd=workspace)
 
 def command_wrapper(parsed):
-    if parsed.name == 'workspace':
+    if parsed.name == 'mail':
+        wrapper_mail(args.arguments)
+    elif parsed.name == 'workspace':
         wrapper_workspace(args.arguments)
     else:
         raise RuntimeError('Unsupported wrapper: %s' % parsed)

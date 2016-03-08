@@ -48,6 +48,21 @@ def test_unwrap_job():
     unwrapped = sanctify.unwrap_job('sanctify', 'job.sh', [['trigger', '--success=next.sh'], ['workspace', '--project']])
     eq_(expected, unwrapped)
 
+def test_wrapper_mail():
+    with patch.dict(os.environ, {'JOB_NAME': 'unittest', 'PROJECT_NAME': 'unittest', 'USER': 'user'}, True):
+        # mail is sent on success when --always
+        with patch('sanctify.sniff_process_output', return_value=['foo', 0]), patch('sanctify.send_mail') as send_mail:
+            sanctify.wrapper_mail(['--always', '--', 'job.sh'])
+
+        assert send_mail.called
+        eq_('foo', send_mail.call_args[0][3])
+        eq_('<user@localhost>', send_mail.call_args[0][1])
+
+    # TODO cases:
+    # --always - failure
+    # --failure - success, failure
+    # --success - success, failure
+
 @patch('os.makedirs')
 @patch('subprocess.check_call')
 def test_wrapper_workspace(check_call, makedirs):
